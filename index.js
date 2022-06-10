@@ -1,6 +1,17 @@
-import DiscordJS, { Intents } from 'discord.js';
-import dotenv from 'dotenv';
+const DiscordJS = require('discord.js');
+const { Intents } = require('discord.js');
+const dotenv = require('dotenv');
 const { GoogleSpreadsheet } = require('google-spreadsheet');
+const express = require('express');
+const app = express();
+const port = 3000;
+
+app.get('/', (req, res) => res.send('Hello World!'));
+
+app.listen(port, () =>
+  console.log(`Example app listening at http://localhost:${port}`)
+);
+
 dotenv.config();
 
 const client = new DiscordJS.Client({
@@ -14,7 +25,7 @@ const client = new DiscordJS.Client({
 const doc = new GoogleSpreadsheet(process.env.GOOGLE_SHEET_ID);
 
 const initGoogleSheet = async () => {
-  const creds = require('./config/discordbotaccesssheet-31f4b91e4af9.json'); // the file saved above
+  const creds = require('./config/private.json'); // the file saved above
   await doc.useServiceAccountAuth(creds);
 
   await doc.loadInfo(); // loads document properties and worksheets
@@ -32,30 +43,6 @@ client.on('ready', () => {
   } else {
     commands = client.application?.commands;
   }
-
-  // commands?.create({
-  //   name: 'ping',
-  //   description: 'Replies with pong.',
-  // });
-
-  // commands?.create({
-  //   name: 'add',
-  //   description: 'Adds two numbers',
-  //   options: [
-  //     {
-  //       name: 'num1',
-  //       description: 'The first number',
-  //       required: true,
-  //       type: DiscordJS.Constants.ApplicationCommandOptionTypes.NUMBER,
-  //     },
-  //     {
-  //       name: 'num2',
-  //       description: 'The second number',
-  //       required: true,
-  //       type: DiscordJS.Constants.ApplicationCommandOptionTypes.NUMBER,
-  //     },
-  //   ],
-  // });
 
   commands?.create({
     name: 'find',
@@ -82,7 +69,7 @@ client.on('interactionCreate', async (interaction) => {
   const { commandName, options } = interaction;
   switch (commandName) {
     case 'find':
-      const resourceName = options.getString('name')!;
+      const resourceName = options.getString('name');
       let rowNo = 0;
       let hightest = 0;
       const sheet = doc.sheetsByIndex[0]; // or use doc.sheetsById[id] or doc.sheetsByTitle[title]
@@ -94,7 +81,7 @@ client.on('interactionCreate', async (interaction) => {
         if (cellResource.value) {
           const re = /\s*(?:;\/|$)\s*/;
           const resources = cellResource.value.split(re);
-          resources.forEach((element: string) => {
+          resources.forEach((element) => {
             if (element.includes(resourceName)) {
               const re2 = /\d+/;
               const number = element.match(re2);
