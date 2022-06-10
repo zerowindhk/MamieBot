@@ -36,7 +36,7 @@ const initGoogleSheet = async () => {
 
 client.on('ready', () => {
   console.log('bot is ready');
-  const guildId = '976887315182006292';
+  const guildId = process.env.GUID_ID;
   const guid = client.guilds.cache.get(guildId);
   // console.log(process.env.GOOGLE_API_KEY);
   let commands;
