@@ -111,3 +111,7 @@ config/
 
 #package-lock
 package-lock.json
+
+#replit
+replit.nix
+.replit
