@@ -25,8 +25,10 @@ const client = new DiscordJS.Client({
 const doc = new GoogleSpreadsheet(process.env.GOOGLE_SHEET_ID);
 
 const initGoogleSheet = async () => {
-  const creds = require('./config/private.json'); // the file saved above
-  await doc.useServiceAccountAuth(creds);
+  await doc.useServiceAccountAuth({
+    client_email: process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL,
+    private_key: process.env.GOOGLE_PRIVATE_KEY,
+  });
 
   await doc.loadInfo(); // loads document properties and worksheets
   console.log(doc.title);
@@ -41,10 +43,10 @@ client.on('ready', () => {
   if (guid) {
     commands = guid.commands;
   } else {
-    commands = client.application?.commands;
+    commands = client.application.commands;
   }
 
-  commands?.create({
+  commands.create({
     name: 'find',
     description: '查找最高掉落的關卡',
     options: [
