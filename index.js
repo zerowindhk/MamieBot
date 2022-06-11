@@ -4,12 +4,12 @@ const dotenv = require('dotenv');
 const { GoogleSpreadsheet } = require('google-spreadsheet');
 const express = require('express');
 const app = express();
-const port = 3000;
+const port = 5000;
 
 app.get('/', (req, res) => res.send('Hello World!'));
 
-app.listen(port, () =>
-  console.log(`Example app listening at http://localhost:${port}`)
+app.listen(process.env.PORT || 5000, () =>
+  console.log(`Discord bot listening at http://localhost:${port}`)
 );
 
 dotenv.config();
