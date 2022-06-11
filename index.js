@@ -2,15 +2,15 @@ const DiscordJS = require('discord.js');
 const { Intents } = require('discord.js');
 const dotenv = require('dotenv');
 const { GoogleSpreadsheet } = require('google-spreadsheet');
-// const express = require('express');
-// const app = express();
-// const port = 3000;
+const express = require('express');
+const app = express();
+const port = 3000;
 
-// app.get('/', (req, res) => res.send('Hello World!'));
+app.get('/', (req, res) => res.send('Hello World!'));
 
-// app.listen(port, () =>
-//   console.log(`Example app listening at http://localhost:${port}`)
-// );
+app.listen(port, () =>
+  console.log(`Example app listening at http://localhost:${port}`)
+);
 
 dotenv.config();
 
@@ -38,15 +38,15 @@ client.on('ready', () => {
   console.log('bot is ready');
   const guildId = process.env.GUID_ID;
   const guid = client.guilds.cache.get(guildId);
-  // console.log(process.env.GOOGLE_API_KEY);
   let commands;
   if (guid) {
     commands = guid.commands;
   } else {
-    commands = client.application.commands;
+    commands = client.application?.commands;
   }
+  // console.log(guid, commands);
 
-  commands.create({
+  commands?.create({
     name: 'find',
     description: '查找最高掉落的關卡',
     options: [
@@ -68,6 +68,7 @@ client.on('interactionCreate', async (interaction) => {
   if (!interaction.isCommand()) {
     return;
   }
+  console.log(interaction);
   const { commandName, options } = interaction;
   switch (commandName) {
     case 'find':
