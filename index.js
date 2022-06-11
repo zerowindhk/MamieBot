@@ -2,15 +2,15 @@ const DiscordJS = require('discord.js');
 const { Intents } = require('discord.js');
 const dotenv = require('dotenv');
 const { GoogleSpreadsheet } = require('google-spreadsheet');
-const express = require('express');
-const app = express();
-const port = 3000;
+// const express = require('express');
+// const app = express();
+// const port = 3000;
 
-app.get('/', (req, res) => res.send('Hello World!'));
+// app.get('/', (req, res) => res.send('Hello World!'));
 
-app.listen(port, () =>
-  console.log(`Example app listening at http://localhost:${port}`)
-);
+// app.listen(port, () =>
+//   console.log(`Example app listening at http://localhost:${port}`)
+// );
 
 dotenv.config();
 
@@ -89,7 +89,7 @@ client.on('interactionCreate', async (interaction) => {
               const number = element.match(re2);
               if (number) {
                 const count = parseInt(number[0]);
-                if (count > hightest) {
+                if (count >= hightest) {
                   rowNo = i;
                   hightest = count;
                 }
@@ -97,8 +97,7 @@ client.on('interactionCreate', async (interaction) => {
             }
           });
         } else {
-          // already at the end of file
-          break;
+          continue; //not filled yet
         }
       }
       const hightestCellLevel = sheet.getCell(rowNo, 0);
