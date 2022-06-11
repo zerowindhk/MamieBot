@@ -68,7 +68,7 @@ client.on('interactionCreate', async (interaction) => {
   if (!interaction.isCommand()) {
     return;
   }
-  console.log(interaction);
+  // console.log(interaction);
   const { commandName, options } = interaction;
   switch (commandName) {
     case 'find':
