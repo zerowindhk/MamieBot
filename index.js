@@ -1,12 +1,17 @@
 const DiscordJS = require('discord.js');
-const { Intents } = require('discord.js');
+const { Intents, MessageEmbed } = require('discord.js');
 const dotenv = require('dotenv');
+const {
+  authGoogleSheet,
+  findResource,
+  findWeaponResource,
+} = require('./src/googleSheet');
 const { GoogleSpreadsheet } = require('google-spreadsheet');
 const express = require('express');
 const app = express();
 
 app.get('/', (req, res) => res.send('Hello World!'));
-const port = process.env.PORT || 5000;
+const port = process.env.PORT || 4000;
 app.listen(port, () =>
   console.log(`Discord bot listening at http://localhost:${port}`)
 );
@@ -23,16 +28,6 @@ const client = new DiscordJS.Client({
 });
 const doc = new GoogleSpreadsheet(process.env.GOOGLE_SHEET_ID);
 
-const initGoogleSheet = async () => {
-  await doc.useServiceAccountAuth({
-    client_email: process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL,
-    private_key: process.env.GOOGLE_PRIVATE_KEY,
-  });
-
-  await doc.loadInfo(); // loads document properties and worksheets
-  console.log(doc.title);
-};
-
 client.on('ready', () => {
   console.log('bot is ready');
   const guildId = process.env.GUID_ID;
@@ -47,7 +42,7 @@ client.on('ready', () => {
 
   commands?.create({
     name: 'find',
-    description: '查找最高掉落的關卡',
+    description: '查找素材最高掉落的關卡',
     options: [
       {
         name: 'name',
@@ -58,9 +53,19 @@ client.on('ready', () => {
     ],
   });
 
-  (async function () {
-    await initGoogleSheet();
-  })();
+  commands?.create({
+    name: 'weapon',
+    description: '查找武器及其素材最高掉落的關卡',
+    options: [
+      {
+        name: 'name',
+        description: '武器名稱',
+        required: true,
+        type: DiscordJS.Constants.ApplicationCommandOptionTypes.STRING,
+      },
+    ],
+  });
+  authGoogleSheet(doc);
 });
 
 client.on('interactionCreate', async (interaction) => {
@@ -72,41 +77,38 @@ client.on('interactionCreate', async (interaction) => {
   switch (commandName) {
     case 'find':
       const resourceName = options.getString('name');
-      let rowNo = 0;
-      let hightest = 0;
-      const sheet = doc.sheetsByIndex[0]; // or use doc.sheetsById[id] or doc.sheetsByTitle[title]
-      // console.log('row count', sheet.rowCount);
-      await sheet.loadCells(`A1:B${sheet.rowCount}`);
-      for (let i = 0; i < sheet.rowCount; i++) {
-        const cellResource = sheet.getCell(i, 1);
-        // console.log('cell value', i, cellResource.value);
-        if (cellResource.value) {
-          const re = /\s*(?:;\/|$)\s*/;
-          const resources = cellResource.value.split(re);
-          resources.forEach((element) => {
-            if (element.includes(resourceName)) {
-              const re2 = /\d+/;
-              const number = element.match(re2);
-              if (number) {
-                const count = parseInt(number[0]);
-                if (count >= hightest) {
-                  rowNo = i;
-                  hightest = count;
-                }
-              }
-            }
-          });
-        } else {
-          continue; //not filled yet
-        }
-      }
-      const hightestCellLevel = sheet.getCell(rowNo, 0);
-      // console.log(hightestCellLevel.value);
-      const result = `查找掉落物: ${resourceName} 關卡: ${hightestCellLevel.value} 數量: ${hightest}`;
-      console.log(result);
-      interaction.reply({
-        content: result,
+      const resourceResult = await findResource(doc, resourceName);
+      console.log(resourceResult);
+      await interaction.reply({
+        content: resourceResult,
       });
+      break;
+    case 'weapon':
+      const weaponName = options.getString('name');
+      const weaponResult = await findWeaponResource(doc, weaponName);
+      console.log('weaponResult', weaponResult);
+      if (!weaponResult) {
+        await interaction.reply({
+          content: `沒有此武器: ${weaponName}`,
+        });
+      } else {
+        const stagesToString = weaponResult.stages.join(' / ');
+        const resourcesToField = weaponResult.resources.map((element) => ({
+          name: element.resourceName,
+          value: `素材:${element.stage}\n關卡:${element.amount}\n武器素材:${
+            element.findWithWeapon ? '是' : '否'
+          }`,
+        }));
+
+        const embed = new MessageEmbed({
+          title: weaponName,
+          description: `掉落關卡: ${stagesToString}`,
+          fields: resourcesToField,
+        });
+        await interaction.reply({
+          embeds: [embed],
+        });
+      }
       break;
     default:
       break;
