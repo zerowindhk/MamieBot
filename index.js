@@ -98,10 +98,12 @@ client.on('interactionCreate', async (interaction) => {
           value: `素材:${element.stage}\n關卡:${element.amount}\n武器素材:${
             element.findWithWeapon ? '是' : '否'
           }`,
+          inline: true,
         }));
 
         const embed = new MessageEmbed({
           title: weaponName,
+          color: '#0099ff',
           description: `掉落關卡: ${stagesToString}`,
           fields: resourcesToField,
         });
