@@ -95,7 +95,7 @@ client.on('interactionCreate', async (interaction) => {
         const stagesToString = weaponResult.stages.join(' / ');
         const resourcesToField = weaponResult.resources.map((element) => ({
           name: element.resourceName,
-          value: `素材:${element.stage}\n關卡:${element.amount}\n武器素材:${
+          value: `關卡:${element.stage}\n素材:${element.amount}\n武器素材:${
             element.findWithWeapon ? '是' : '否'
           }`,
           inline: true,
