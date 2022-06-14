@@ -17,10 +17,11 @@ const loopFind = (sheet, resourceName, weaponName = null) => {
     if (cellValue && cellValue.includes(resourceName)) {
       // const re = /\s*(?:;\/|$)\s*/;
       const resources = cellValue.split('/');
-      const element = resources.find((item) => item.includes(resourceName));
+      const exactRe = new RegExp(`d+${resourceName}`);
+      const element = resources.find((item) => item.match(exactRe));
       // console.log(cellValue, resources, element);
 
-      const re2 = new RegExp(`d+${resourceName}`);
+      const re2 = /\d+/;
       const number = element.match(re2);
       if (number) {
         const count = parseInt(number[0]);
