@@ -8,7 +8,25 @@ const authGoogleSheet = async (doc) => {
   console.log(doc.title);
 };
 
-const loopFind = (sheet, resourceName, weaponName = null) => {
+const getDistinctResourcesList = (sheet, likeResourceName) => {
+  const distinctArray = [];
+  for (let i = 0; i < sheet.rowCount; i++) {
+    const cellResource = sheet.getCell(i, 1);
+    const cellValue = cellResource.value;
+    if (cellValue && cellValue.includes(likeResourceName)) {
+      const resources = cellValue.split('/');
+      resources.forEach((item) => {
+        const name = item.replace(/\d+/, '');
+        if (name.includes(likeResourceName) && !distinctArray.includes(name)) {
+          distinctArray.push(name);
+        }
+      });
+    }
+  }
+  return distinctArray;
+};
+
+const loopExactFind = (sheet, resourceName, weaponName = null) => {
   let rowNo = 0;
   let amount = 0;
   for (let i = 0; i < sheet.rowCount; i++) {
@@ -17,16 +35,20 @@ const loopFind = (sheet, resourceName, weaponName = null) => {
     if (cellValue && cellValue.includes(resourceName)) {
       // const re = /\s*(?:;\/|$)\s*/;
       const resources = cellValue.split('/');
-      const exactRe = new RegExp(`\d+${resourceName}`);
-      const element = resources.find((item) => item.includes(resourceName));
-      console.log(resourceName, resources, element);
-      const re2 = /\d+/;
-      const number = element.match(re2);
-      if (number) {
-        const count = parseInt(number[0]);
-        if (count >= amount) {
-          rowNo = i;
-          amount = count;
+      const exactRe = new RegExp(`^[0-9]+${resourceName}$`);
+      const element = resources.find((item) => {
+        // console.log('element:', item, 'result:', exactRe.test(item));
+        return exactRe.test(item);
+      });
+      if (element) {
+        const re2 = /\d+/;
+        const number = element.match(re2);
+        if (number) {
+          const count = parseInt(number[0]);
+          if (count >= amount) {
+            rowNo = i;
+            amount = count;
+          }
         }
       }
     } else {
@@ -60,23 +82,21 @@ const findWeaponStages = (sheet, weaponName) => {
   return result;
 };
 
-const findResourceBySheet = async (sheet, resourceName) => {
+const findResource = async (doc, resourceName) => {
+  const sheet = doc.sheetsByIndex[0];
   await sheet.loadCells(`A1:B${sheet.rowCount}`);
-  const item = loopFind(sheet, resourceName);
-  let result = '';
-  if (item.rowNo == 0) {
-    result = `沒有此素材: ${resourceName}`;
-  } else {
-    result = `查找掉落物: ${resourceName} 關卡: ${item.stage} 數量: ${item.amount}`;
-  }
-  // console.log(result);
+  const result = loopExactFind(sheet, resourceName);
+
   return result;
 };
 
-const findResource = async (doc, resourceName) => {
-  const sheet = doc.sheetsByIndex[0]; // or use doc.sheetsById[id] or doc.sheetsByTitle[title]
-  // console.log('row count', sheet.rowCount);
-  const result = await findResourceBySheet(sheet, resourceName);
+const findLikeResource = async (doc, likeResourceName) => {
+  const sheet = doc.sheetsByIndex[0];
+  await sheet.loadCells(`A1:B${sheet.rowCount}`);
+  const resourceNameList = getDistinctResourcesList(sheet, likeResourceName);
+  const result = resourceNameList.map((resourceName) =>
+    loopExactFind(sheet, resourceName)
+  );
   return result;
 };
 
@@ -115,7 +135,7 @@ const findWeaponResource = async (doc, weaponName) => {
   const resourceSheet = doc.sheetsByIndex[0];
   await resourceSheet.loadCells(`A1:C${resourceSheet.rowCount}`);
   weaponObject.resources.forEach((element) => {
-    const item = loopFind(resourceSheet, element.resourceName, weaponName);
+    const item = loopExactFind(resourceSheet, element.resourceName, weaponName);
     element.stage = item.stage;
     element.amount = item.amount;
     element.findWithWeapon = item.findWithWeapon;
@@ -128,5 +148,6 @@ const findWeaponResource = async (doc, weaponName) => {
 module.exports = {
   authGoogleSheet,
   findResource,
+  findLikeResource,
   findWeaponResource,
 };

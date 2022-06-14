@@ -4,6 +4,7 @@ const dotenv = require('dotenv');
 const {
   authGoogleSheet,
   findResource,
+  findLikeResource,
   findWeaponResource,
 } = require('./src/googleSheet');
 const { GoogleSpreadsheet } = require('google-spreadsheet');
@@ -39,10 +40,23 @@ client.on('ready', () => {
     commands = client.application?.commands;
   }
   // console.log(guid, commands);
+  commands?.fetch();
+  commands?.create({
+    name: 'resource',
+    description: '查找素材最高掉落的關卡',
+    options: [
+      {
+        name: 'name',
+        description: '掉落物',
+        required: true,
+        type: DiscordJS.Constants.ApplicationCommandOptionTypes.STRING,
+      },
+    ],
+  });
 
   commands?.create({
-    name: 'find',
-    description: '查找素材最高掉落的關卡',
+    name: 'like_resource',
+    description: '查找包含名字的素材最高掉落的關卡',
     options: [
       {
         name: 'name',
@@ -75,12 +89,40 @@ client.on('interactionCreate', async (interaction) => {
   // console.log(interaction);
   const { commandName, options } = interaction;
   switch (commandName) {
-    case 'find':
+    case 'resource':
       const resourceName = options.getString('name');
       const resourceResult = await findResource(doc, resourceName);
-      console.log(resourceResult);
+      console.log('resourceResult', resourceResult);
+      const embed = new MessageEmbed({
+        title: resourceName,
+        color: '#ff0000',
+        description: resourceResult.amount
+          ? `關卡:${resourceResult.stage}\n素材:${resourceResult.amount}`
+          : '沒有此素材',
+      });
       await interaction.reply({
-        content: resourceResult,
+        embeds: [embed],
+      });
+      break;
+    case 'like_resource':
+      const likeResourceName = options.getString('name');
+      const likeResourceResultList = await findLikeResource(
+        doc,
+        likeResourceName
+      );
+      console.log('likeResourceResultList', likeResourceResultList);
+      const embeds = likeResourceResultList.map(
+        (resourceResult) =>
+          new MessageEmbed({
+            title: resourceResult.resourceName,
+            color: '#ff0000',
+            description: resourceResult.amount
+              ? `關卡:${resourceResult.stage}\n素材:${resourceResult.amount}`
+              : '沒有此素材',
+          })
+      );
+      await interaction.reply({
+        embeds,
       });
       break;
     case 'weapon':
@@ -95,12 +137,11 @@ client.on('interactionCreate', async (interaction) => {
         const stagesToString = weaponResult.stages.join(' / ');
         const resourcesToField = weaponResult.resources.map((element) => ({
           name: element.resourceName,
-          value: `關卡:${element.stage}\n素材:${element.amount}\n武器素材:${
+          value: `關卡:${element.stage}\n素材:${element.amount}\n武器碎片:${
             element.findWithWeapon ? '是' : '否'
           }`,
           inline: true,
         }));
-
         const embed = new MessageEmbed({
           title: weaponName,
           color: '#0099ff',
@@ -112,6 +153,7 @@ client.on('interactionCreate', async (interaction) => {
         });
       }
       break;
+
     default:
       break;
   }
