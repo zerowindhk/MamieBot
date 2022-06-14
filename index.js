@@ -92,7 +92,7 @@ client.on('interactionCreate', async (interaction) => {
     case 'resource':
       const resourceName = options.getString('name');
       const resourceResult = await findResource(doc, resourceName);
-      console.log('resourceResult', resourceResult);
+      console.log('name:', resourceName, '\nresourceResult:\n', resourceResult);
       const embed = new MessageEmbed({
         title: resourceName,
         color: '#ff0000',
@@ -110,28 +110,48 @@ client.on('interactionCreate', async (interaction) => {
         doc,
         likeResourceName
       );
-      console.log('likeResourceResultList', likeResourceResultList);
-      const embeds = likeResourceResultList.map(
-        (resourceResult) =>
-          new MessageEmbed({
-            title: resourceResult.resourceName,
-            color: '#ff0000',
-            description: resourceResult.amount
-              ? `關卡:${resourceResult.stage}\n素材:${resourceResult.amount}`
-              : '沒有此素材',
-          })
+      console.log(
+        'name:',
+        likeResourceName,
+        '\nlikeResourceResultList:\n',
+        likeResourceResultList
       );
-      await interaction.reply({
-        embeds,
-      });
+      if (!likeResourceResultList.length) {
+        const embed = new MessageEmbed({
+          title: likeResourceName,
+          color: '#ff0000',
+          description: '沒有此素材',
+        });
+        await interaction.reply({
+          embeds: [embed],
+        });
+      } else {
+        const embeds = likeResourceResultList.map(
+          (resourceResult) =>
+            new MessageEmbed({
+              title: resourceResult.resourceName,
+              color: '#ff0000',
+              description: resourceResult.amount
+                ? `關卡:${resourceResult.stage}\n素材:${resourceResult.amount}`
+                : '沒有此素材',
+            })
+        );
+        await interaction.reply({
+          embeds,
+        });
+      }
       break;
     case 'weapon':
       const weaponName = options.getString('name');
       const weaponResult = await findWeaponResource(doc, weaponName);
-      console.log('weaponResult', weaponResult);
+      console.log('name:', weaponName, '\nweaponResult:\n', weaponResult);
       if (!weaponResult) {
+        const embed = new MessageEmbed({
+          title: weaponName,
+          description: '沒有此武器',
+        });
         await interaction.reply({
-          content: `沒有此武器: ${weaponName}`,
+          embeds: [embed],
         });
       } else {
         const stagesToString = weaponResult.stages.join(' / ');
@@ -153,7 +173,6 @@ client.on('interactionCreate', async (interaction) => {
         });
       }
       break;
-
     default:
       break;
   }
