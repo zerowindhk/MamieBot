@@ -20,7 +20,7 @@ const loopFind = (sheet, resourceName, weaponName = null) => {
       const element = resources.find((item) => item.includes(resourceName));
       // console.log(cellValue, resources, element);
 
-      const re2 = /\d+/;
+      const re2 = new RegExp(`d+${resourceName}`);
       const number = element.match(re2);
       if (number) {
         const count = parseInt(number[0]);
