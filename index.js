@@ -97,7 +97,7 @@ client.on('interactionCreate', async (interaction) => {
         title: resourceName,
         color: '#ff0000',
         description: resourceResult.amount
-          ? `關卡:${resourceResult.stage}\n素材:${resourceResult.amount}`
+          ? `${resourceResult.amount} @ ${resourceResult.stage}\n`
           : '沒有此素材',
       });
       await interaction.reply({
@@ -131,7 +131,7 @@ client.on('interactionCreate', async (interaction) => {
           .slice(0, 25)
           .map((resourceResult) => ({
             name: resourceResult.resourceName,
-            value: `關卡:${resourceResult.stage}\n素材:${resourceResult.amount}\n`,
+            value: `${resourceResult.amount} @ ${resourceResult.stage}\n`,
             inline: true,
           }));
         const embed = new MessageEmbed({
@@ -143,25 +143,6 @@ client.on('interactionCreate', async (interaction) => {
         await interaction.reply({
           embeds: [embed],
         });
-
-        // const embeds = likeResourceResultList
-        //   .slice(0, 10)
-        //   .map((resourceResult) => {
-        //     return new MessageEmbed({
-        //       title: resourceResult.resourceName,
-        //       color: '#ff0000',
-        //       description: resourceResult.amount
-        //         ? `關卡:${resourceResult.stage}\n素材:${resourceResult.amount}`
-        //         : '沒有此素材',
-        //     });
-        //   });
-        // await interaction.reply({
-        //   content:
-        //     foundItem > 10
-        //       ? '查找多於10個，只顯示前10個。\n請嘗試更精確查詢。'
-        //       : null,
-        //   embeds,
-        // });
       }
       break;
     case 'weapon':
@@ -181,9 +162,7 @@ client.on('interactionCreate', async (interaction) => {
         const resourcesToField = weaponResult.resources.map(
           (resourceResult) => ({
             name: resourceResult.resourceName,
-            value: `關卡:${resourceResult.stage}\n素材:${
-              resourceResult.amount
-            }\n武器碎片:${resourceResult.findWithWeapon ? '是' : '否'}\n`,
+            value: `${resourceResult.amount} @ ${resourceResult.stage}\n武器碎片:${resourceResult.findWithWeapon ? '是' : '否'}\n`,
             inline: true,
           })
         );
