@@ -126,19 +126,42 @@ client.on('interactionCreate', async (interaction) => {
           embeds: [embed],
         });
       } else {
-        const embeds = likeResourceResultList.map(
-          (resourceResult) =>
-            new MessageEmbed({
-              title: resourceResult.resourceName,
-              color: '#ff0000',
-              description: resourceResult.amount
-                ? `關卡:${resourceResult.stage}\n素材:${resourceResult.amount}`
-                : '沒有此素材',
-            })
-        );
-        await interaction.reply({
-          embeds,
+        const foundItem = likeResourceResultList.length;
+        const fields = likeResourceResultList
+          .slice(0, 25)
+          .map((resourceResult) => ({
+            name: resourceResult.resourceName,
+            value: `關卡:${resourceResult.stage}\n素材:${resourceResult.amount}`,
+            inline: true,
+          }));
+        const embed = new MessageEmbed({
+          title: likeResourceName,
+          color: '#33FF99',
+          description: `已查找${foundItem}項。`,
+          fields,
         });
+        await interaction.reply({
+          embeds: [embed],
+        });
+
+        // const embeds = likeResourceResultList
+        //   .slice(0, 10)
+        //   .map((resourceResult) => {
+        //     return new MessageEmbed({
+        //       title: resourceResult.resourceName,
+        //       color: '#ff0000',
+        //       description: resourceResult.amount
+        //         ? `關卡:${resourceResult.stage}\n素材:${resourceResult.amount}`
+        //         : '沒有此素材',
+        //     });
+        //   });
+        // await interaction.reply({
+        //   content:
+        //     foundItem > 10
+        //       ? '查找多於10個，只顯示前10個。\n請嘗試更精確查詢。'
+        //       : null,
+        //   embeds,
+        // });
       }
       break;
     case 'weapon':
@@ -155,13 +178,15 @@ client.on('interactionCreate', async (interaction) => {
         });
       } else {
         const stagesToString = weaponResult.stages.join(' / ');
-        const resourcesToField = weaponResult.resources.map((element) => ({
-          name: element.resourceName,
-          value: `關卡:${element.stage}\n素材:${element.amount}\n武器碎片:${
-            element.findWithWeapon ? '是' : '否'
-          }`,
-          inline: true,
-        }));
+        const resourcesToField = weaponResult.resources.map(
+          (resourceResult) => ({
+            name: resourceResult.resourceName,
+            value: `關卡:${resourceResult.stage}\n素材:${
+              resourceResult.amount
+            }\n武器碎片:${resourceResult.findWithWeapon ? '是' : '否'}`,
+            inline: true,
+          })
+        );
         const embed = new MessageEmbed({
           title: weaponName,
           color: '#0099ff',
