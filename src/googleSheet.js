@@ -10,7 +10,7 @@ const authGoogleSheet = async (doc) => {
 
 const getDistinctResourcesList = (sheet, likeResourceName) => {
   const distinctArray = [];
-  for (let i = 0; i < sheet.rowCount; i++) {
+  for (let i = 1; i < sheet.rowCount; i++) {
     const cellResource = sheet.getCell(i, 1);
     const cellValue = cellResource.value;
     if (cellValue && cellValue.includes(likeResourceName)) {
@@ -29,7 +29,7 @@ const getDistinctResourcesList = (sheet, likeResourceName) => {
 const loopExactFind = (sheet, resourceName, weaponName = null) => {
   let rowNo = 0;
   let amount = 0;
-  for (let i = 0; i < sheet.rowCount; i++) {
+  for (let i = 1; i < sheet.rowCount; i++) {
     const cellResource = sheet.getCell(i, 1);
     const cellValue = cellResource.value;
     if (cellValue && cellValue.includes(resourceName)) {
@@ -70,7 +70,7 @@ const loopExactFind = (sheet, resourceName, weaponName = null) => {
 
 const findWeaponStages = (sheet, weaponName) => {
   const result = [];
-  for (let i = 0; i < sheet.rowCount; i++) {
+  for (let i = 1; i < sheet.rowCount; i++) {
     const weaponCell = sheet.getCell(i, 2);
     const weaponValue = weaponCell.value;
     // console.log(weaponValue);
@@ -110,7 +110,7 @@ const findWeaponResource = async (doc, weaponName) => {
     stages: [],
     resources: [],
   };
-  for (let i = 0; i < weaponSheet.rowCount; i++) {
+  for (let i = 1; i < weaponSheet.rowCount; i++) {
     const weaponNameCell = weaponSheet.getCell(i, 0);
     // console.log(weaponNameCell.value, weaponNameCell.value === weaponName);
     if (weaponNameCell.value === weaponName) {
