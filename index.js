@@ -131,7 +131,7 @@ client.on('interactionCreate', async (interaction) => {
           .slice(0, 25)
           .map((resourceResult) => ({
             name: resourceResult.resourceName,
-            value: `關卡:${resourceResult.stage}\n素材:${resourceResult.amount}`,
+            value: `關卡:${resourceResult.stage}\n素材:${resourceResult.amount}\n`,
             inline: true,
           }));
         const embed = new MessageEmbed({
@@ -183,7 +183,7 @@ client.on('interactionCreate', async (interaction) => {
             name: resourceResult.resourceName,
             value: `關卡:${resourceResult.stage}\n素材:${
               resourceResult.amount
-            }\n武器碎片:${resourceResult.findWithWeapon ? '是' : '否'}`,
+            }\n武器碎片:${resourceResult.findWithWeapon ? '是' : '否'}\n`,
             inline: true,
           })
         );
