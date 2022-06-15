@@ -162,7 +162,7 @@ client.on('interactionCreate', async (interaction) => {
         const resourcesToField = weaponResult.resources.map(
           (resourceResult) => ({
             name: resourceResult.resourceName,
-            value: `${resourceResult.amount} @ ${resourceResult.stage}\n武器碎片:${resourceResult.findWithWeapon ? '是' : '否'}\n`,
+            value: `${resourceResult.amount} @ ${resourceResult.stage}\n相關武器碎片掉落：${resourceResult.findWithWeapon ? '是' : '否'}\n`,
             inline: true,
           })
         );
