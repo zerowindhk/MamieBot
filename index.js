@@ -1,5 +1,6 @@
-const DiscordJS = require('discord.js');
 const {
+  Client,
+  Constants,
   Intents,
   MessageEmbed,
   MessageActionRow,
@@ -25,7 +26,7 @@ app.listen(port, () =>
 
 dotenv.config();
 
-const client = new DiscordJS.Client({
+const client = new Client({
   intents: [Intents.FLAGS.GUILDS, Intents.FLAGS.GUILD_MESSAGES],
 });
 const doc = new GoogleSpreadsheet(process.env.GOOGLE_SHEET_ID);
@@ -51,7 +52,7 @@ client.on('ready', () => {
         name: 'name',
         description: '素材名稱',
         required: true,
-        type: DiscordJS.Constants.ApplicationCommandOptionTypes.STRING,
+        type: Constants.ApplicationCommandOptionTypes.STRING,
       },
     ],
   });
@@ -64,7 +65,7 @@ client.on('ready', () => {
         name: 'name',
         description: '武器名稱',
         required: true,
-        type: DiscordJS.Constants.ApplicationCommandOptionTypes.STRING,
+        type: Constants.ApplicationCommandOptionTypes.STRING,
       },
     ],
   });
