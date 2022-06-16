@@ -97,7 +97,7 @@ client.on('interactionCreate', async (interaction) => {
         title: resourceName,
         color: '#ff0000',
         description: resourceResult.amount
-          ? `${resourceResult.amount} @ ${resourceResult.stage}\n`
+          ? `${resourceResult.amount} @ ${resourceResult.stage}`
           : '沒有此素材',
       });
       await interaction.reply({
@@ -131,7 +131,7 @@ client.on('interactionCreate', async (interaction) => {
           .slice(0, 25)
           .map((resourceResult) => ({
             name: resourceResult.resourceName,
-            value: `${resourceResult.amount} @ ${resourceResult.stage}\n`,
+            value: `${resourceResult.amount} @ ${resourceResult.stage}`,
             inline: true,
           }));
         const embed = new MessageEmbed({
@@ -162,7 +162,11 @@ client.on('interactionCreate', async (interaction) => {
         const resourcesToField = weaponResult.resources.map(
           (resourceResult) => ({
             name: resourceResult.resourceName,
-            value: `${resourceResult.amount} @ ${resourceResult.stage}\n相關武器碎片掉落：${resourceResult.findWithWeapon ? '是' : '否'}\n`,
+            value: `${resourceResult.amount} @ ${
+              resourceResult.stage
+            }\n相關武器碎片掉落：${
+              resourceResult.findWithWeapon ? '是' : '否'
+            }`,
             inline: true,
           })
         );
