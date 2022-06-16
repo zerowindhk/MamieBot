@@ -1,11 +1,17 @@
 const DiscordJS = require('discord.js');
-const { Intents, MessageEmbed } = require('discord.js');
+const {
+  Intents,
+  MessageEmbed,
+  MessageActionRow,
+  MessageButton,
+} = require('discord.js');
 const dotenv = require('dotenv');
 const {
   authGoogleSheet,
   findResource,
   findLikeResource,
   findWeaponResource,
+  findLikeWeapon,
 } = require('./src/googleSheet');
 const { GoogleSpreadsheet } = require('google-spreadsheet');
 const express = require('express');
@@ -20,12 +26,7 @@ app.listen(port, () =>
 dotenv.config();
 
 const client = new DiscordJS.Client({
-  intents: [
-    Intents.FLAGS.GUILDS,
-    Intents.FLAGS.GUILD_MESSAGES,
-    // Intents.FLAGS.DIRECT_MESSAGE_REACTIONS,
-    // Intents.FLAGS.GUILD_PRESENCES,
-  ],
+  intents: [Intents.FLAGS.GUILDS, Intents.FLAGS.GUILD_MESSAGES],
 });
 const doc = new GoogleSpreadsheet(process.env.GOOGLE_SHEET_ID);
 
@@ -41,26 +42,14 @@ client.on('ready', () => {
   }
   // console.log(guid, commands);
   commands?.fetch();
-  commands?.create({
-    name: 'resource',
-    description: '查找素材最高掉落的關卡',
-    options: [
-      {
-        name: 'name',
-        description: '掉落物',
-        required: true,
-        type: DiscordJS.Constants.ApplicationCommandOptionTypes.STRING,
-      },
-    ],
-  });
 
   commands?.create({
-    name: 'like_resource',
+    name: 'resource',
     description: '查找包含名字的素材最高掉落的關卡',
     options: [
       {
         name: 'name',
-        description: '掉落物',
+        description: '素材名稱',
         required: true,
         type: DiscordJS.Constants.ApplicationCommandOptionTypes.STRING,
       },
@@ -69,7 +58,7 @@ client.on('ready', () => {
 
   commands?.create({
     name: 'weapon',
-    description: '查找武器及其素材最高掉落的關卡',
+    description: '查找包含名字的武器及其素材最高掉落的關卡',
     options: [
       {
         name: 'name',
@@ -79,111 +68,175 @@ client.on('ready', () => {
       },
     ],
   });
+
   authGoogleSheet(doc);
 });
 
 client.on('interactionCreate', async (interaction) => {
-  if (!interaction.isCommand()) {
-    return;
-  }
-  // console.log(interaction);
-  const { commandName, options } = interaction;
-  switch (commandName) {
-    case 'resource':
-      const resourceName = options.getString('name');
-      const resourceResult = await findResource(doc, resourceName);
-      console.log('name:', resourceName, '\nresourceResult:\n', resourceResult);
-      const embed = new MessageEmbed({
-        title: resourceName,
-        color: '#ff0000',
-        description: resourceResult.amount
-          ? `${resourceResult.amount} @ ${resourceResult.stage}`
-          : '沒有此素材',
-      });
-      await interaction.reply({
-        embeds: [embed],
-      });
-      break;
-    case 'like_resource':
-      const likeResourceName = options.getString('name');
-      const likeResourceResultList = await findLikeResource(
-        doc,
-        likeResourceName
-      );
-      console.log(
-        'name:',
-        likeResourceName,
-        '\nlikeResourceResultList:\n',
-        likeResourceResultList
-      );
-      if (!likeResourceResultList.length) {
-        const embed = new MessageEmbed({
-          title: likeResourceName,
-          color: '#ff0000',
-          description: '沒有此素材',
-        });
-        await interaction.reply({
-          embeds: [embed],
-        });
-      } else {
-        const foundItem = likeResourceResultList.length;
-        const fields = likeResourceResultList
-          .slice(0, 25)
-          .map((resourceResult) => ({
-            name: resourceResult.resourceName,
-            value: `${resourceResult.amount} @ ${resourceResult.stage}`,
-            inline: true,
-          }));
-        const embed = new MessageEmbed({
-          title: likeResourceName,
-          color: '#33FF99',
-          description: `已查找${foundItem}項。`,
-          fields,
-        });
-        await interaction.reply({
-          embeds: [embed],
-        });
-      }
-      break;
-    case 'weapon':
-      const weaponName = options.getString('name');
-      const weaponResult = await findWeaponResource(doc, weaponName);
-      console.log('name:', weaponName, '\nweaponResult:\n', weaponResult);
-      if (!weaponResult) {
-        const embed = new MessageEmbed({
-          title: weaponName,
-          color: '#0099ff',
-          description: '沒有此武器',
-        });
-        await interaction.reply({
-          embeds: [embed],
-        });
-      } else {
-        const stagesToString = weaponResult.stages.join(' / ');
-        const resourcesToField = weaponResult.resources.map(
-          (resourceResult) => ({
-            name: resourceResult.resourceName,
-            value: `${resourceResult.amount} @ ${
-              resourceResult.stage
-            }\n相關武器碎片掉落：${
-              resourceResult.findWithWeapon ? '是' : '否'
-            }`,
-            inline: true,
-          })
-        );
-        const embed = new MessageEmbed({
-          title: weaponName,
-          color: '#0099ff',
-          description: `掉落關卡: ${stagesToString}`,
-          fields: resourcesToField,
-        });
-        await interaction.reply({
-          embeds: [embed],
-        });
-      }
-      break;
-    default:
-      break;
+  try {
+    if (!interaction.isCommand()) {
+      return;
+    }
+    const { commandName, options } = interaction;
+    console.log(commandName, options.getString('name'));
+    switch (commandName) {
+      case 'resource':
+        await interaction.deferReply();
+        const likeResourceName = options.getString('name');
+        const resourceNameList = await findLikeResource(doc, likeResourceName);
+        const resourceCount = resourceNameList.length;
+        if (resourceCount) {
+          const rows = [];
+          for (let i = 0; i <= resourceCount / 5 + 1 && i <= 5; i++) {
+            const start = i * 5;
+            const sliceResourceNameList = resourceNameList.slice(
+              start,
+              start + 5
+            );
+            if (sliceResourceNameList.length) {
+              const row = new MessageActionRow({
+                components: sliceResourceNameList.map(
+                  (item) =>
+                    new MessageButton({
+                      custom_id: `${item}`,
+                      label: `${item}`,
+                      style: 'PRIMARY',
+                    })
+                ),
+              });
+              rows.push(row);
+            }
+          }
+          const embed = new MessageEmbed({
+            title: likeResourceName,
+            color: '#33FF99',
+            description: `已查找${resourceCount}項。`,
+          });
+          await interaction.editReply({
+            components: rows,
+            embeds: [embed],
+          });
+          const filter = (i) => i.user.id === interaction.user.id;
+          const collector = interaction.channel.createMessageComponentCollector(
+            {
+              filter,
+              time: 15000,
+            }
+          );
+          collector.on('collect', async (i) => {
+            const { customId: resourceName } = i;
+            console.log('choice', resourceName);
+            const resourceResult = await findResource(doc, resourceName);
+            const embed = new MessageEmbed({
+              title: resourceName,
+              color: '#5544ff',
+              description: `${resourceResult.amount} @ ${resourceResult.stage}`,
+            });
+            await i.update({
+              embeds: [embed],
+              components: [],
+            });
+          });
+          collector.on('end', (collected) => {});
+        } else {
+          const embed = new MessageEmbed({
+            title: likeResourceName,
+            color: '#ff0000',
+            description: '沒有此素材',
+          });
+          await interaction.editReply({
+            embeds: [embed],
+          });
+        }
+        break;
+      case 'weapon':
+        await interaction.deferReply();
+        const likeWeaponName = options.getString('name');
+        const weaponNameList = await findLikeWeapon(doc, likeWeaponName);
+        const weaponCount = weaponNameList.length;
+        if (weaponCount) {
+          const rows = [];
+          for (let i = 0; i <= weaponNameList.length / 5 + 1 && i <= 5; i++) {
+            const start = i * 5;
+            const sliceWeaponNameList = weaponNameList.slice(start, start + 5);
+            if (sliceWeaponNameList.length) {
+              const row = new MessageActionRow({
+                components: sliceWeaponNameList.map(
+                  (item) =>
+                    new MessageButton({
+                      custom_id: `${item}`,
+                      label: `${item}`,
+                      style: 'PRIMARY',
+                    })
+                ),
+              });
+              // console.log(row);
+              rows.push(row);
+            }
+          }
+          const embed = new MessageEmbed({
+            title: likeWeaponName,
+            color: '#33FF99',
+            description: `已查找${weaponCount}項。`,
+          });
+          await interaction.editReply({
+            components: rows,
+            embeds: [embed],
+          });
+          const filter = (i) => i.user.id === interaction.user.id;
+          const collector = interaction.channel.createMessageComponentCollector(
+            {
+              filter,
+              time: 15000,
+            }
+          );
+          collector.on('collect', async (i) => {
+            const { customId: weaponName } = i;
+            console.log('choice', weaponName);
+            const weaponResult = await findWeaponResource(doc, weaponName);
+            const stagesToString = weaponResult.stages.join(' / ');
+            const resourcesToField = weaponResult.resources.map(
+              (resourceResult) => ({
+                name: resourceResult.resourceName,
+                value: `${resourceResult.amount} @ ${
+                  resourceResult.stage
+                }\n掉落武器碎片：${
+                  resourceResult.findWithWeapon ? '是' : '否'
+                }`,
+                inline: true,
+              })
+            );
+            const embed = new MessageEmbed({
+              title: weaponName,
+              color: '#0099ff',
+              description: `掉落關卡: ${stagesToString}`,
+              fields: resourcesToField,
+            });
+            await i.update({
+              embeds: [embed],
+              components: [],
+            });
+          });
+          collector.on('end', (collected) => {});
+        } else {
+          const embed = new MessageEmbed({
+            title: likeWeaponName,
+            color: '#ff0000',
+            description: '沒有此武器',
+          });
+          await interaction.editReply({
+            embeds: [embed],
+          });
+        }
+        break;
+      default:
+        break;
+    }
+  } catch (error) {
+    console.error(error);
+    await interaction.editReply({
+      content: `Bug occur, please contact ZeroWind#6775`,
+    });
   }
 });
 

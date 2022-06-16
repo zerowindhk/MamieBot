@@ -26,6 +26,18 @@ const getDistinctResourcesList = (sheet, likeResourceName) => {
   return distinctArray;
 };
 
+const getDistinctWeaponList = (sheet, likeWeaponName) => {
+  const distinctArray = [];
+  for (let i = 1; i < sheet.rowCount; i++) {
+    const cellResource = sheet.getCell(i, 0);
+    const cellValue = cellResource.value;
+    if (cellValue && cellValue.includes(likeWeaponName)) {
+      distinctArray.push(cellValue);
+    }
+  }
+  return distinctArray;
+};
+
 const loopExactFind = (sheet, resourceName, weaponName = null) => {
   let rowNo = 0;
   let amount = 0;
@@ -105,10 +117,7 @@ const findResource = async (doc, resourceName) => {
 const findLikeResource = async (doc, likeResourceName) => {
   const sheet = doc.sheetsByIndex[0];
   await sheet.loadCells(`A1:B${sheet.rowCount}`);
-  const resourceNameList = getDistinctResourcesList(sheet, likeResourceName);
-  const result = resourceNameList.map((resourceName) =>
-    loopExactFind(sheet, resourceName)
-  );
+  const result = getDistinctResourcesList(sheet, likeResourceName);
   return result;
 };
 
@@ -157,9 +166,17 @@ const findWeaponResource = async (doc, weaponName) => {
   return weaponObject;
 };
 
+const findLikeWeapon = async (doc, likeWeaponName) => {
+  const sheet = doc.sheetsByIndex[1];
+  await sheet.loadCells(`A1:B${sheet.rowCount}`);
+  const result = getDistinctWeaponList(sheet, likeWeaponName);
+  return result;
+};
+
 module.exports = {
   authGoogleSheet,
   findResource,
   findLikeResource,
   findWeaponResource,
+  findLikeWeapon,
 };
