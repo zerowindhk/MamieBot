@@ -152,6 +152,7 @@ client.on('interactionCreate', async (interaction) => {
       if (!weaponResult) {
         const embed = new MessageEmbed({
           title: weaponName,
+          color: '#0099ff',
           description: '沒有此武器',
         });
         await interaction.reply({
