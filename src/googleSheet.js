@@ -29,6 +29,8 @@ const getDistinctResourcesList = (sheet, likeResourceName) => {
 const loopExactFind = (sheet, resourceName, weaponName = null) => {
   let rowNo = 0;
   let amount = 0;
+  let hasWeaponRowNo = 0;
+  let hasWeaponAmount = 0;
   for (let i = 1; i < sheet.rowCount; i++) {
     const cellResource = sheet.getCell(i, 1);
     const cellValue = cellResource.value;
@@ -48,6 +50,10 @@ const loopExactFind = (sheet, resourceName, weaponName = null) => {
           if (count >= amount) {
             rowNo = i;
             amount = count;
+            if (weaponName && sheet.getCell(i, 2).value === weaponName) {
+              hasWeaponRowNo = i;
+              hasWeaponAmount = count;
+            }
           }
         }
       }
@@ -55,6 +61,7 @@ const loopExactFind = (sheet, resourceName, weaponName = null) => {
       continue; //not filled yet
     }
   }
+  rowNo = weaponName && hasWeaponAmount === amount ? hasWeaponRowNo : rowNo;
   const stage = sheet.getCell(rowNo, 0).value;
   const findWithWeapon = weaponName
     ? sheet.getCell(rowNo, 2).value === weaponName
@@ -75,8 +82,13 @@ const findWeaponStages = (sheet, weaponName) => {
     const weaponValue = weaponCell.value;
     // console.log(weaponValue);
     if (weaponValue && weaponValue.includes(weaponName)) {
-      const stageCell = sheet.getCell(i, 0);
-      result.push(stageCell.value);
+      const weaponNameList = weaponValue.split('/');
+      weaponNameList.forEach((element) => {
+        if (element === weaponName) {
+          const stageCell = sheet.getCell(i, 0);
+          result.push(stageCell.value);
+        }
+      });
     }
   }
   return result;
