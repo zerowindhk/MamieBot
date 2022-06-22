@@ -70,6 +70,11 @@ client.on('ready', () => {
     ],
   });
 
+  commands?.create({
+    name: 'excel',
+    description: '提供資料來源的google sheet',
+  });
+
   authGoogleSheet(doc);
 });
 
@@ -223,6 +228,19 @@ client.on('interactionCreate', async (interaction) => {
           embeds: [embed],
         });
       }
+      break;
+    case 'excel':
+      const embed = new MessageEmbed({
+        title: '',
+        author: {
+          name: 'ZeroWind',
+          url: 'https://docs.google.com/spreadsheets/d/1CeTO-Bae2xNGrAtTo1zAb81joirxu4CGnrdVieXQbfU/view#gid=0',
+        },
+      });
+      await interaction.reply({
+        embeds: [embed],
+        ephemeral: true,
+      });
       break;
     default:
       break;
