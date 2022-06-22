@@ -14,6 +14,7 @@ const {
   findWeaponResource,
   findLikeWeapon,
 } = require('./src/googleSheet');
+const { convertor } = require('./src/translate');
 const { GoogleSpreadsheet } = require('google-spreadsheet');
 const express = require('express');
 const app = express();
@@ -101,7 +102,7 @@ client.on('interactionCreate', async (interaction) => {
       await interaction.deferReply({
         ephemeral: options.getBoolean('private') || false,
       });
-      const likeResourceName = options.getString('name');
+      const likeResourceName = convertor(options.getString('name'));
       const resourceNameList = await findLikeResource(doc, likeResourceName);
       const resourceCount = resourceNameList.length;
       if (resourceCount) {
@@ -171,7 +172,7 @@ client.on('interactionCreate', async (interaction) => {
       await interaction.deferReply({
         ephemeral: options.getBoolean('private') || false,
       });
-      const likeWeaponName = options.getString('name');
+      const likeWeaponName = convertor(options.getString('name'));
       const weaponNameList = await findLikeWeapon(doc, likeWeaponName);
       const weaponCount = weaponNameList.length;
       if (weaponCount) {
