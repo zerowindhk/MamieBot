@@ -231,9 +231,9 @@ client.on('interactionCreate', async (interaction) => {
       break;
     case 'excel':
       const embed = new MessageEmbed({
-        title: '',
+        title: 'Zold:Out 武器素材查詢區',
         author: {
-          name: 'ZeroWind',
+          name: 'Google Sheet',
           url: 'https://docs.google.com/spreadsheets/d/1CeTO-Bae2xNGrAtTo1zAb81joirxu4CGnrdVieXQbfU/view#gid=0',
         },
       });
