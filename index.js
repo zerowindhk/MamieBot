@@ -232,10 +232,7 @@ client.on('interactionCreate', async (interaction) => {
     case 'excel':
       const embed = new MessageEmbed({
         title: 'Zold:Out 武器素材查詢區',
-        author: {
-          name: 'Google Sheet',
-          url: 'https://docs.google.com/spreadsheets/d/1CeTO-Bae2xNGrAtTo1zAb81joirxu4CGnrdVieXQbfU/view#gid=0',
-        },
+        url: 'https://docs.google.com/spreadsheets/d/1CeTO-Bae2xNGrAtTo1zAb81joirxu4CGnrdVieXQbfU/view#gid=0',
       });
       await interaction.reply({
         embeds: [embed],
