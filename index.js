@@ -54,6 +54,12 @@ client.on('ready', () => {
         required: true,
         type: Constants.ApplicationCommandOptionTypes.STRING,
       },
+      {
+        name: 'private',
+        description: '如不想讓人知道自己在查甚麼就Yes',
+        required: false,
+        type: Constants.ApplicationCommandOptionTypes.BOOLEAN,
+      },
     ],
   });
 
@@ -66,6 +72,12 @@ client.on('ready', () => {
         description: '武器名稱',
         required: true,
         type: Constants.ApplicationCommandOptionTypes.STRING,
+      },
+      {
+        name: 'private',
+        description: '如不想讓人知道自己在查甚麼就Yes',
+        required: false,
+        type: Constants.ApplicationCommandOptionTypes.BOOLEAN,
       },
     ],
   });
@@ -86,7 +98,9 @@ client.on('interactionCreate', async (interaction) => {
   console.log(commandName, options.getString('name'));
   switch (commandName) {
     case 'resource':
-      await interaction.deferReply();
+      await interaction.deferReply({
+        ephemeral: options.getBoolean('private') || false,
+      });
       const likeResourceName = options.getString('name');
       const resourceNameList = await findLikeResource(doc, likeResourceName);
       const resourceCount = resourceNameList.length;
@@ -154,7 +168,9 @@ client.on('interactionCreate', async (interaction) => {
       }
       break;
     case 'weapon':
-      await interaction.deferReply();
+      await interaction.deferReply({
+        ephemeral: options.getBoolean('private') || false,
+      });
       const likeWeaponName = options.getString('name');
       const weaponNameList = await findLikeWeapon(doc, likeWeaponName);
       const weaponCount = weaponNameList.length;
