@@ -83,7 +83,7 @@ client.on('interactionCreate', async (interaction) => {
     return;
   }
   const { commandName, options } = interaction;
-  console.log(commandName, converter(options.getString('name')));
+  console.log(commandName, options.getString('name'));
   switch (commandName) {
     case 'resource':
       await interaction.deferReply({
