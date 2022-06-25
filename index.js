@@ -54,6 +54,12 @@ client.on('ready', () => {
         required: true,
         type: Constants.ApplicationCommandOptionTypes.STRING,
       },
+      {
+        name: 'private',
+        description: '如不想讓人知道自己在查甚麼就Yes',
+        required: false,
+        type: Constants.ApplicationCommandOptionTypes.BOOLEAN,
+      },
     ],
   });
 
@@ -66,6 +72,12 @@ client.on('ready', () => {
         description: '武器名稱',
         required: true,
         type: Constants.ApplicationCommandOptionTypes.STRING,
+      },
+      {
+        name: 'private',
+        description: '如不想讓人知道自己在查甚麼就Yes',
+        required: false,
+        type: Constants.ApplicationCommandOptionTypes.BOOLEAN,
       },
     ],
   });
